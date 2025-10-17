@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Classification</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #45a049;
+            --background-color: #f9f9f9;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .upload-card {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .file-input-label:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .result-card {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            display: none;
+        }
+
+        .result-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            object-fit: cover;
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        .food-categories {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .food-category {
+            background-color: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            .upload-card,
+            .result-card {
+                padding: 20px;
+            }
+
+            .food-categories {
+                gap: 6px;
+            }
+
+            .food-category {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Food Classifier</h1>
+            <p class="subtitle">Upload a food image to identify what it is</p>
+        </header>
+
+        <div class="upload-card">
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="form-group" id="drop-area">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="file-input" name="file" accept="image/*" class="file-input" required>
+                        <label for="file-input" class="file-input-label">Choose Food Image or Drag & Drop Here</label>
+                    </div>
+                    <div id="file-name" class="file-name">No file selected</div>
+                </div>
+                <div class="food-categories">
+                    <div class="food-category">Bread</div>
+                    <div class="food-category">Dairy product</div>
+                    <div class="food-category">Dessert</div>
+                    <div class="food-category">Egg</div>
+                    <div class="food-category">Fried food</div>
+                    <div class="food-category">Meat</div>
+                    <div class="food-category">Noodles-Pasta</div>
+                    <div class="food-category">Rice</div>
+                    <div class="food-category">Seafood</div>
+                    <div class="food-category">Soup</div>
+                    <div class="food-category">Vegetable-Fruit</div>
+                </div>
+                <div id="image-preview" style="display: none;">
+                    <img id="preview-image" class="preview-image" src="#" alt="Preview">
+                </div>
+                <button type="submit" id="predict-button" disabled>Identify Food</button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your food image...</p>
+        </div>
+
+        <div class="result-card" id="result-card">
+            <h2 class="result-title">Identification Results</h2>
+            <div class="result-content">
+                <img id="result-image" class="preview-image" src="#" alt="Analyzed Food">
+                <div class="result-item">
+                    <p><strong>Predicted Food:</strong> <span id="predicted-class">-</span></p>
+                </div>
+                <div class="result-item">
+                    <p><strong>Confidence:</strong> <span id="confidence-value">-</span>%</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="confidence-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('file-input');
+            const fileName = document.getElementById('file-name');
+            const predictButton = document.getElementById('predict-button');
+            const previewImage = document.getElementById('preview-image');
+            const imagePreview = document.getElementById('image-preview');
+            const uploadForm = document.getElementById('upload-form');
+            const loading = document.getElementById('loading');
+            const resultCard = document.getElementById('result-card');
+            const resultImage = document.getElementById('result-image');
+            const predictedClass = document.getElementById('predicted-class');
+            const confidenceValue = document.getElementById('confidence-value');
+            const confidenceBar = document.getElementById('confidence-bar');
+            const dropArea = document.getElementById('drop-area');
+
+            // Update file name and preview when file is selected
+            const handleFileSelect = (file) => {
+                if (file) {
+                    fileName.textContent = file.name;
+                    predictButton.disabled = false;
+
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewImage.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    fileName.textContent = 'No file selected';
+                    predictButton.disabled = true;
+                    imagePreview.style.display = 'none';
+                }
+            };
+
+            fileInput.addEventListener('change', function () {
+                handleFileSelect(this.files[0]);
+            });
+
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropArea.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+            }
+
+            function unhighlight() {
+                dropArea.style.backgroundColor = '';
+            }
+
+            dropArea.addEventListener('drop', function (e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                fileInput.files = dt.files;
+                handleFileSelect(file);
+            }, false);
+
+            // Handle form submission
+            uploadForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                // Show loading, hide results
+                loading.style.display = 'block';
+                resultCard.style.display = 'none';
+
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+
+                try {
+                    const response = await fetch('/ping', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const result = await response.json();
+
+                    // Display results
+                    resultImage.src = URL.createObjectURL(fileInput.files[0]);
+                    predictedClass.textContent = result.predicted_class || 'Unknown';
+
+                    const confidence = (result.confidence * 100).toFixed(2);
+                    confidenceValue.textContent = confidence;
+                    confidenceBar.style.width = `${confidence}%`;
+
+                    // Hide loading, show results
+                    loading.style.display = 'none';
+                    resultCard.style.display = 'block';
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    loading.style.display = 'none';
+                    resultCard.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                    resultCard.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
