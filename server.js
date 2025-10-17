@@ -505,7 +505,7 @@ SOFTWARE.`;
           owner: GITHUB_USERNAME,
           repo: repoName,
           path: filename,
-          message: \`Add \${filename}\`,
+          message: `Add ${filename}`,
           content: Buffer.from(content).toString('base64'),
         });
       }
@@ -551,13 +551,13 @@ SOFTWARE.`;
             console.log('Successfully sent to evaluation URL');
             return;
           } else {
-            throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
         } catch (error) {
           retries--;
           if (retries === 0) throw error;
           
-          console.log(\`Retrying in \${delay}ms... (\${retries} retries left)\`);
+          console.log(`Retrying in ${delay}ms... (${retries} retries left)`);
           await new Promise(resolve => setTimeout(resolve, delay));
           delay *= 2; // Exponential backoff
         }
@@ -621,8 +621,8 @@ app.use((error, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(\`Server running on port \${PORT}\`);
-  console.log(\`Environment: \${process.env.NODE_ENV || 'development'}\`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app;
